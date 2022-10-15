@@ -136,6 +136,9 @@ func link(input string, simple bool) (string, error) {
 }
 
 func ref(input string) (string, error) {
+	if reference, matched := match(input); matched {
+		return reference.Reference(), nil
+	}
 	return input, nil
 }
 

@@ -5,6 +5,8 @@ import (
 )
 
 type Match interface {
+	// Reference returns a string to reference this match by
+	Reference() string
 }
 
 type Issue struct {
@@ -25,9 +27,22 @@ type Discussion struct {
 	Num   string
 }
 
+func (i Issue) Reference() string {
+	return i.Owner + "/" + i.Repo + "#" + i.Num
+}
+
+func (p Pull) Reference() string {
+	return p.Owner + "/" + p.Repo + "#" + p.Num
+}
+
+func (d Discussion) Reference() string {
+	return d.Owner + "/" + d.Repo + "#" + d.Num
+}
+
 var nwoReferencePattern = regexp.MustCompile(`https://github.com/([^/]+)/([^/]+)/(issue|pull|discussions)/(\d+)(.*)`)
 var issueReferencePattern = regexp.MustCompile(`\b([^/]+)/([^/#]+)#(\d+)\b`)
 
+// match attempts to find a Match (issue, PR, discussion) in the given input.
 func match(input string) (Match, bool) {
 	if ref, ok := matchURL(input); ok {
 		return ref, true
