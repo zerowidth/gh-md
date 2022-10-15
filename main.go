@@ -136,12 +136,29 @@ func link(input string, simple bool) (string, error) {
 }
 
 func ref(input string) (string, error) {
-	if reference, matched := match(input); matched {
-		return reference.Reference(), nil
+	reference, matched := match(input)
+	if !matched {
+		return input, nil
 	}
-	return input, nil
+
+	return reference.Reference(), nil
 }
 
 func title(input string, sanitize bool) (string, error) {
-	return input, nil
+	reference, matched := match(input)
+	if !matched {
+		return input, nil
+	}
+
+	client, err := gh.RESTClient(nil)
+	if err != nil {
+		return input, err
+	}
+
+	title, err := reference.Title(client)
+	if err != nil {
+		return input, err
+	}
+
+	return title, nil
 }

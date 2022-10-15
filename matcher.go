@@ -2,11 +2,15 @@ package main
 
 import (
 	"regexp"
+
+	"github.com/cli/go-gh/pkg/api"
 )
 
 type Match interface {
 	// Reference returns a string to reference this match by
 	Reference() string
+	// Title fetches the title of a match from the API
+	Title(client api.RESTClient) (string, error)
 }
 
 type Issue struct {
@@ -31,12 +35,28 @@ func (i Issue) Reference() string {
 	return i.Owner + "/" + i.Repo + "#" + i.Num
 }
 
+func (i Issue) Title(client api.RESTClient) (string, error) {
+	resp := struct{ Title string }{}
+	err := client.Get("repos/"+i.Owner+"/"+i.Repo+"/issues/"+i.Num, &resp)
+	return resp.Title, err
+}
+
 func (p Pull) Reference() string {
 	return p.Owner + "/" + p.Repo + "#" + p.Num
 }
 
+func (p Pull) Title(client api.RESTClient) (string, error) {
+	resp := struct{ Title string }{}
+	err := client.Get("repos/"+p.Owner+"/"+p.Repo+"/pulls/"+p.Num, &resp)
+	return resp.Title, err
+}
+
 func (d Discussion) Reference() string {
 	return d.Owner + "/" + d.Repo + "#" + d.Num
+}
+
+func (d Discussion) Title(client api.RESTClient) (string, error) {
+	return "", nil
 }
 
 var nwoReferencePattern = regexp.MustCompile(`https://github.com/([^/]+)/([^/]+)/(issue|pull|discussions)/(\d+)(.*)`)
