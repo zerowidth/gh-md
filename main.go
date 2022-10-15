@@ -71,7 +71,7 @@ The input can be one of:
 
 Example:
 
-   $ gh md ref https://github.com/cli/cli/pulls/123
+   $ gh md ref https://github.com/cli/cli/pull/123
    cli/cli#123`,
 	Run: func(cmd *cobra.Command, args []string) {
 		out, err := ref(args[0])
