@@ -6,14 +6,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type issueTest struct {
+type matcherTest struct {
 	name     string
 	input    string
-	expected Issue
+	expected Match
 }
 
-func TestMatchIssue(t *testing.T) {
-	for _, test := range []issueTest{
+func TestMatchIssues(t *testing.T) {
+	for _, test := range []matcherTest{
 		{
 			name:     "simple reference",
 			input:    "owner/repo#123",
@@ -31,8 +31,8 @@ func TestMatchIssue(t *testing.T) {
 	} {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			issue, matched := matchIssueReference(test.input)
-			if (test.expected == Issue{}) {
+			issue, matched := match(test.input)
+			if test.expected == nil {
 				assert.False(t, matched)
 			} else {
 				assert.True(t, matched)
@@ -42,43 +42,37 @@ func TestMatchIssue(t *testing.T) {
 	}
 }
 
-type urlTest struct {
-	name     string
-	url      string
-	expected Reference
-}
-
-func TestMatchURL(t *testing.T) {
-	for _, test := range []urlTest{
+func TestMatchURLs(t *testing.T) {
+	for _, test := range []matcherTest{
 		{
 			name:     "issue url",
-			url:      "https://github.com/owner/repo/issue/123",
+			input:    "https://github.com/owner/repo/issue/123",
 			expected: Issue{Owner: "owner", Repo: "repo", Num: "123"},
 		},
 		{
 			name:     "issue url inside markdown",
-			url:      "[owner/repo#123: title](https://github.com/owner/repo/issue/123)",
+			input:    "[owner/repo#123: title](https://github.com/owner/repo/issue/123)",
 			expected: Issue{Owner: "owner", Repo: "repo", Num: "123"},
 		},
 		{
 			name:     "pull url",
-			url:      "https://github.com/owner/repo/pull/123",
+			input:    "https://github.com/owner/repo/pull/123",
 			expected: Pull{Owner: "owner", Repo: "repo", Num: "123"},
 		},
 		{
 			name:     "pull url inside markdown",
-			url:      "[owner/repo#123: title](https://github.com/owner/repo/pull/123)",
+			input:    "[owner/repo#123: title](https://github.com/owner/repo/pull/123)",
 			expected: Pull{Owner: "owner", Repo: "repo", Num: "123"},
 		},
 		{
 			name:     "repo discussion url",
-			url:      "https://github.com/owner/repo/discussions/123",
+			input:    "https://github.com/owner/repo/discussions/123",
 			expected: Discussion{Owner: "owner", Repo: "repo", Num: "123"},
 		},
 	} {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
-			reference, matched := matchURL(test.url)
+			reference, matched := match(test.input)
 			if (test.expected == Issue{}) {
 				assert.False(t, matched)
 			} else {
@@ -87,4 +81,10 @@ func TestMatchURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMatchURLPrecedence(t *testing.T) {
+	ref, matched := match("[owner/repo#123: title](https://github.com/another/repo/issue/456)")
+	assert.True(t, matched)
+	assert.Equal(t, Issue{Owner: "another", Repo: "repo", Num: "456"}, ref)
 }

@@ -4,7 +4,7 @@ import (
 	"regexp"
 )
 
-type Reference interface {
+type Match interface {
 }
 
 type Issue struct {
@@ -28,6 +28,18 @@ type Discussion struct {
 var nwoReferencePattern = regexp.MustCompile(`https://github.com/([^/]+)/([^/]+)/(issue|pull|discussions)/(\d+)(.*)`)
 var issueReferencePattern = regexp.MustCompile(`\b([^/]+)/([^/#]+)#(\d+)\b`)
 
+func match(input string) (Match, bool) {
+	if ref, ok := matchURL(input); ok {
+		return ref, true
+	}
+
+	if issue, ok := matchIssueReference(input); ok {
+		return issue, true
+	}
+
+	return nil, false
+}
+
 func matchIssueReference(input string) (Issue, bool) {
 	matches := issueReferencePattern.FindStringSubmatch(input)
 	if matches != nil {
@@ -41,7 +53,7 @@ func matchIssueReference(input string) (Issue, bool) {
 	return Issue{}, false
 }
 
-func matchURL(url string) (Reference, bool) {
+func matchURL(url string) (Match, bool) {
 	matches := nwoReferencePattern.FindStringSubmatch(url)
 	if matches == nil {
 		return nil, false
