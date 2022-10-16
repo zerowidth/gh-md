@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/cli/go-gh"
+	"github.com/cli/go-gh/pkg/api"
 	"github.com/spf13/cobra"
 )
 
@@ -150,7 +152,7 @@ func title(input string, sanitize bool) (string, error) {
 		return input, nil
 	}
 
-	client, err := gh.RESTClient(nil)
+	client, err := gh.GQLClient(nil)
 	if err != nil {
 		return input, err
 	}

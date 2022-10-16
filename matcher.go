@@ -2,15 +2,17 @@ package main
 
 import (
 	"regexp"
+	"strconv"
 
 	"github.com/cli/go-gh/pkg/api"
+	graphql "github.com/cli/shurcooL-graphql"
 )
 
 type Match interface {
 	// Reference returns a string to reference this match by
 	Reference() string
 	// Title fetches the title of a match from the API
-	Title(client api.RESTClient) (string, error)
+	Title(client api.GQLClient) (string, error)
 }
 
 type Issue struct {
@@ -35,28 +37,108 @@ func (i Issue) Reference() string {
 	return i.Owner + "/" + i.Repo + "#" + i.Num
 }
 
-func (i Issue) Title(client api.RESTClient) (string, error) {
-	resp := struct{ Title string }{}
-	err := client.Get("repos/"+i.Owner+"/"+i.Repo+"/issues/"+i.Num, &resp)
-	return resp.Title, err
+func (i Issue) Title(client api.GQLClient) (string, error) {
+	var query struct {
+		Repository struct {
+			IssueOrPullRequest struct {
+				Issue struct {
+					Title string
+				} `graphql:"... on Issue"`
+				PullRequest struct {
+					Title string
+				} `graphql:"... on PullRequest"`
+			} `graphql:"issueOrPullRequest(number: $number)"`
+			Discussion struct {
+				Title string
+			} `graphql:"discussion(number: $number)"`
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
+	num, err := strconv.Atoi(i.Num)
+	if err != nil {
+		return "", err
+	}
+	variables := map[string]interface{}{
+		"owner":  graphql.String(i.Owner),
+		"name":   graphql.String(i.Repo),
+		"number": graphql.Int(num),
+	}
+	err = client.Query("IssueTitle", &query, variables)
+	// ignore error unless no title was found - a "not found" is expected for either
+	// the issue-ish or the discussion.
+	if query.Repository.IssueOrPullRequest.Issue.Title != "" {
+		return query.Repository.IssueOrPullRequest.Issue.Title, nil
+	}
+	if query.Repository.IssueOrPullRequest.PullRequest.Title != "" {
+		return query.Repository.IssueOrPullRequest.PullRequest.Title, nil
+	}
+	if query.Repository.Discussion.Title != "" {
+		return query.Repository.Discussion.Title, nil
+	}
+	return "", err
 }
 
 func (p Pull) Reference() string {
 	return p.Owner + "/" + p.Repo + "#" + p.Num
 }
 
-func (p Pull) Title(client api.RESTClient) (string, error) {
-	resp := struct{ Title string }{}
-	err := client.Get("repos/"+p.Owner+"/"+p.Repo+"/pulls/"+p.Num, &resp)
-	return resp.Title, err
+func (p Pull) Title(client api.GQLClient) (string, error) {
+	var query struct {
+		Repository struct {
+			IssueOrPullRequest struct {
+				Issue struct {
+					Title string
+				} `graphql:"... on Issue"`
+				PullRequest struct {
+					Title string
+				} `graphql:"... on PullRequest"`
+			} `graphql:"issueOrPullRequest(number: $number)"`
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
+	num, err := strconv.Atoi(p.Num)
+	if err != nil {
+		return "", err
+	}
+	variables := map[string]interface{}{
+		"owner":  graphql.String(p.Owner),
+		"name":   graphql.String(p.Repo),
+		"number": graphql.Int(num),
+	}
+	err = client.Query("IssueTitle", &query, variables)
+	if query.Repository.IssueOrPullRequest.Issue.Title != "" {
+		return query.Repository.IssueOrPullRequest.Issue.Title, nil
+	}
+	if query.Repository.IssueOrPullRequest.PullRequest.Title != "" {
+		return query.Repository.IssueOrPullRequest.PullRequest.Title, nil
+	}
+	return "", err
 }
 
 func (d Discussion) Reference() string {
 	return d.Owner + "/" + d.Repo + "#" + d.Num
 }
 
-func (d Discussion) Title(client api.RESTClient) (string, error) {
-	return "", nil
+func (d Discussion) Title(client api.GQLClient) (string, error) {
+	var query struct {
+		Repository struct {
+			Discussion struct {
+				Title string
+			} `graphql:"discussion(number: $number)"`
+		} `graphql:"repository(owner: $owner, name: $name)"`
+	}
+	num, err := strconv.Atoi(d.Num)
+	if err != nil {
+		return "", err
+	}
+	variables := map[string]interface{}{
+		"owner":  graphql.String(d.Owner),
+		"name":   graphql.String(d.Repo),
+		"number": graphql.Int(num),
+	}
+	err = client.Query("DiscussionTitle", &query, variables)
+	if query.Repository.Discussion.Title != "" {
+		return query.Repository.Discussion.Title, nil
+	}
+	return "", err
 }
 
 var nwoReferencePattern = regexp.MustCompile(`https://github.com/([^/]+)/([^/]+)/(issue|pull|discussions)/(\d+)(.*)`)
