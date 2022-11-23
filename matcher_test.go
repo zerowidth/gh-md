@@ -111,6 +111,14 @@ func TestPullRequestTitle(t *testing.T) {
 	assert.Equal(t, "Add Ruby 3.1 to CI", title)
 }
 
+func TestDiscussionTitle(t *testing.T) {
+	client := testClient(t, "fixtures/discussion_title")
+	discussion := Discussion{Owner: "cli", Repo: "cli", Num: "2673"}
+	title, err := discussion.Title(client)
+	require.NoError(t, err)
+	assert.Equal(t, "Upgrade command", title)
+}
+
 func testClient(t *testing.T, fixturePath string) api.GQLClient {
 	r, err := recorder.New(fixturePath)
 	require.NoError(t, err)
