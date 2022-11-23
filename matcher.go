@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 
@@ -11,6 +12,8 @@ import (
 type Match interface {
 	// Reference returns a string to reference this match by
 	Reference() string
+	// URL returns a URL to this match
+	URL() string
 	// Title fetches the title of a match from the API
 	Title(client api.GQLClient) (string, error)
 }
@@ -35,6 +38,10 @@ type Discussion struct {
 
 func (i Issue) Reference() string {
 	return i.Owner + "/" + i.Repo + "#" + i.Num
+}
+
+func (i Issue) URL() string {
+	return fmt.Sprintf("https://github.com/%s/%s/issues/%s", i.Owner, i.Repo, i.Num)
 }
 
 func (i Issue) Title(client api.GQLClient) (string, error) {
@@ -81,6 +88,10 @@ func (p Pull) Reference() string {
 	return p.Owner + "/" + p.Repo + "#" + p.Num
 }
 
+func (p Pull) URL() string {
+	return fmt.Sprintf("https://github.com/%s/%s/pull/%s", p.Owner, p.Repo, p.Num)
+}
+
 func (p Pull) Title(client api.GQLClient) (string, error) {
 	var query struct {
 		Repository struct {
@@ -115,6 +126,10 @@ func (p Pull) Title(client api.GQLClient) (string, error) {
 
 func (d Discussion) Reference() string {
 	return d.Owner + "/" + d.Repo + "#" + d.Num
+}
+
+func (d Discussion) URL() string {
+	return fmt.Sprintf("https://github.com/%s/%s/discussions/%s", d.Owner, d.Repo, d.Num)
 }
 
 func (d Discussion) Title(client api.GQLClient) (string, error) {
