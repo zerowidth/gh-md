@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/cli/go-gh"
@@ -162,5 +164,16 @@ func title(input string, sanitize bool) (string, error) {
 		return input, err
 	}
 
-	return title, nil
+	return sanitizeTitle(title), nil
+}
+
+// sanitize the title for markdown
+func sanitizeTitle(title string) string {
+	title = regexp.MustCompile(`\s+`).ReplaceAllString(title, " ")
+	title = strings.ReplaceAll(title, "[", "(")
+	title = strings.ReplaceAll(title, "]", ")")
+	if strings.Count(title, "::") > 1 {
+		title = strings.ReplaceAll(title, "::", "|")
+	}
+	return title
 }
