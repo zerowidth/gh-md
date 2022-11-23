@@ -140,7 +140,21 @@ func main() {
 }
 
 func link(input string, simple bool) (string, error) {
-	return "", nil
+	reference, matched := match(input)
+	if !matched {
+		return input, nil
+	}
+
+	ref := reference.Reference()
+	if simple {
+		return fmt.Sprintf("[%s](%s)", ref, reference.URL()), nil
+	} else {
+		title, err := reference.Title(client)
+		if err != nil {
+			return input, err
+		}
+		return fmt.Sprintf("[%s: %s](%s)", ref, title, reference.URL()), nil
+	}
 }
 
 func ref(input string) (string, error) {
