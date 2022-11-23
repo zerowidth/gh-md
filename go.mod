@@ -7,6 +7,7 @@ require (
 	github.com/cli/shurcooL-graphql v0.0.2
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
+	gopkg.in/dnaeon/go-vcr.v3 v3.1.2
 )
 
 require (

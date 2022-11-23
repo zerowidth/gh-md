@@ -111,13 +111,26 @@ Example:
 	},
 }
 
+var client api.GQLClient
+
 func init() {
-	linkCmd.Flags().BoolP("simple", "s", false, "Disable title lookup")
-	titleCmd.Flags().BoolP("sanitize", "s", false, "Sanitize output for use as a file path")
+	linkCmd.Flags().Bool("simple", false, "Disable title lookup")
+	titleCmd.Flags().Bool("sanitize", false, "Sanitize output for use as a file path")
 	rootCmd.AddCommand(linkCmd, refCmd, titleCmd)
 }
 
 func main() {
+	var err error
+	opts := &api.ClientOptions{
+		EnableCache: true,
+		Timeout:     10 * time.Second,
+	}
+	client, err = gh.GQLClient(opts)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
@@ -125,16 +138,7 @@ func main() {
 }
 
 func link(input string, simple bool) (string, error) {
-	client, err := gh.RESTClient(nil)
-	if err != nil {
-		return input, err
-	}
-	response := struct{ Login string }{}
-	err = client.Get("user", &response)
-	if err != nil {
-		return input, err
-	}
-	return fmt.Sprintf("running as %s", response.Login), nil
+	return "", nil
 }
 
 func ref(input string) (string, error) {
@@ -149,12 +153,8 @@ func ref(input string) (string, error) {
 func title(input string, sanitize bool) (string, error) {
 	reference, matched := match(input)
 	if !matched {
+		fmt.Fprintf(os.Stderr, "didn't match %s", input)
 		return input, nil
-	}
-
-	client, err := gh.GQLClient(nil)
-	if err != nil {
-		return input, err
 	}
 
 	title, err := reference.Title(client)
