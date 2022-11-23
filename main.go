@@ -178,16 +178,18 @@ func title(input string, sanitize bool) (string, error) {
 		return input, err
 	}
 
-	return sanitizeTitle(title), nil
-}
-
-// sanitize the title for markdown
-func sanitizeTitle(title string) string {
+	// sanitize for paths, remove : / ? chars
+	if sanitize {
+		title = regexp.MustCompile(`:+|/`).ReplaceAllString(title, " - ")
+		title = strings.ReplaceAll(title, "/", "-")
+		title = strings.ReplaceAll(title, "?", "")
+	}
 	title = regexp.MustCompile(`\s+`).ReplaceAllString(title, " ")
 	title = strings.ReplaceAll(title, "[", "(")
 	title = strings.ReplaceAll(title, "]", ")")
 	if strings.Count(title, "::") > 1 {
 		title = strings.ReplaceAll(title, "::", "|")
 	}
-	return title
+
+	return title, nil
 }
