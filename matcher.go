@@ -141,7 +141,7 @@ func (d Discussion) Title(client api.GQLClient) (string, error) {
 	return "", err
 }
 
-var nwoReferencePattern = regexp.MustCompile(`https://github.com/([^/]+)/([^/]+)/(issue|pull|discussions)/(\d+)(.*)`)
+var urlReferencePattern = regexp.MustCompile(`https://github.com/([^/]+)/([^/]+)/(issues|pull|discussions)/(\d+)(.*)`)
 var issueReferencePattern = regexp.MustCompile(`\b([^/]+)/([^/#]+)#(\d+)\b`)
 
 // match attempts to find a Match (issue, PR, discussion) in the given input.
@@ -171,13 +171,13 @@ func matchIssueReference(input string) (Issue, bool) {
 }
 
 func matchURL(url string) (Match, bool) {
-	matches := nwoReferencePattern.FindStringSubmatch(url)
+	matches := urlReferencePattern.FindStringSubmatch(url)
 	if matches == nil {
 		return nil, false
 	}
 
 	switch matches[3] {
-	case "issue":
+	case "issues":
 		return Issue{
 			Owner: matches[1],
 			Repo:  matches[2],

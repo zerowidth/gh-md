@@ -46,12 +46,12 @@ func TestMatchURLs(t *testing.T) {
 	for _, test := range []matcherTest{
 		{
 			name:     "issue url",
-			input:    "https://github.com/owner/repo/issue/123",
+			input:    "https://github.com/owner/repo/issues/123",
 			expected: Issue{Owner: "owner", Repo: "repo", Num: "123"},
 		},
 		{
 			name:     "issue url inside markdown",
-			input:    "[owner/repo#123: title](https://github.com/owner/repo/issue/123)",
+			input:    "[owner/repo#123: title](https://github.com/owner/repo/issues/123)",
 			expected: Issue{Owner: "owner", Repo: "repo", Num: "123"},
 		},
 		{
@@ -74,9 +74,9 @@ func TestMatchURLs(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			reference, matched := match(test.input)
 			if (test.expected == Issue{}) {
-				assert.False(t, matched)
+				assert.False(t, matched, "should not have matched")
 			} else {
-				assert.True(t, matched)
+				assert.True(t, matched, "should have matched")
 				assert.Equal(t, test.expected, reference)
 			}
 		})
@@ -84,7 +84,7 @@ func TestMatchURLs(t *testing.T) {
 }
 
 func TestMatchURLPrecedence(t *testing.T) {
-	ref, matched := match("[owner/repo#123: title](https://github.com/another/repo/issue/456)")
+	ref, matched := match("[owner/repo#123: title](https://github.com/another/repo/issues/456)")
 	assert.True(t, matched)
 	assert.Equal(t, Issue{Owner: "another", Repo: "repo", Num: "456"}, ref)
 }
