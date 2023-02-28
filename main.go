@@ -77,6 +77,7 @@ Example:
 
    $ gh md ref https://github.com/cli/cli/pull/123
    cli/cli#123`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		out, err := ref(args[0])
 		if err != nil {
@@ -103,6 +104,7 @@ Example:
 
    $ gh md title cli/cli#123
    Tweak flags language`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		sanitize, _ := cmd.Flags().GetBool("sanitize")
 		out, err := title(args[0], sanitize)
