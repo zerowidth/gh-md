@@ -61,7 +61,7 @@ $ gh md title cli/cli#123
 Tweak flags language
 ```
 
-The title can be sanitized for use as a path, stripping `:`, `/`, and a few other characters. For example, in Obsidian templater, define `markdownTitle` as `/path/to/gh md title --sanitize $input`. After copying a GitHub url to your clipboard, you can use this in a file template like:
+The title can be sanitized for use as a path, stripping `:`, `/`, and a few other characters. For example, in Obsidian templater, define `markdownTitle` as `/path/to/gh md title --sanitize $input`. After copying a GitHub URL to your clipboard, you can use this in a file template like:
 
 ```
 <%- await tp.file.rename("Issue - " + tp.date.now("YYYY-MM") + " - " + (await tp.user.markdownTitle({input: (await tp.system.clipboard())}))) -%>
