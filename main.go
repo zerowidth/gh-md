@@ -55,7 +55,12 @@ Examples:
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		fmt.Println(out)
+		noNewline, _ := cmd.Flags().GetBool("no-newline")
+		if noNewline {
+			fmt.Print(out)
+		} else {
+			fmt.Println(out)
+		}
 	},
 }
 
@@ -83,7 +88,12 @@ Example:
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		fmt.Println(out)
+		noNewline, _ := cmd.Flags().GetBool("no-newline")
+		if noNewline {
+			fmt.Print(out)
+		} else {
+			fmt.Println(out)
+		}
 	},
 }
 
@@ -111,13 +121,21 @@ Example:
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		fmt.Println(out)
+		noNewline, _ := cmd.Flags().GetBool("no-newline")
+		if noNewline {
+			fmt.Print(out)
+		} else {
+			fmt.Println(out)
+		}
 	},
 }
 
 var client api.GQLClient
 
 func init() {
+	linkCmd.Flags().BoolP("no-newline", "n", false, "Do not print trailing newline")
+	titleCmd.Flags().BoolP("no-newline", "n", false, "Do not print trailing newline")
+	refCmd.Flags().BoolP("no-newline", "n", false, "Do not print trailing newline")
 	linkCmd.Flags().Bool("simple", false, "Disable title lookup")
 	titleCmd.Flags().Bool("sanitize", false, "Sanitize output for use as a file path")
 	rootCmd.AddCommand(linkCmd, refCmd, titleCmd)
