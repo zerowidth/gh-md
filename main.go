@@ -55,12 +55,7 @@ Examples:
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		noNewline, _ := cmd.Flags().GetBool("no-newline")
-		if noNewline {
-			fmt.Print(out)
-		} else {
-			fmt.Println(out)
-		}
+		printOptionalNewline(cmd, out)
 	},
 }
 
@@ -88,12 +83,7 @@ Example:
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		noNewline, _ := cmd.Flags().GetBool("no-newline")
-		if noNewline {
-			fmt.Print(out)
-		} else {
-			fmt.Println(out)
-		}
+		printOptionalNewline(cmd, out)
 	},
 }
 
@@ -121,12 +111,7 @@ Example:
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 		}
-		noNewline, _ := cmd.Flags().GetBool("no-newline")
-		if noNewline {
-			fmt.Print(out)
-		} else {
-			fmt.Println(out)
-		}
+		printOptionalNewline(cmd, out)
 	},
 }
 
@@ -212,4 +197,13 @@ func title(input string, sanitize bool) (string, error) {
 	}
 
 	return title, nil
+}
+
+func printOptionalNewline(cmd *cobra.Command, output string) {
+	noNewline, _ := cmd.Flags().GetBool("no-newline")
+	if noNewline {
+		fmt.Print(output)
+	} else {
+		fmt.Println(output)
+	}
 }
