@@ -89,7 +89,42 @@ The sanitized issue title can be used for filenames. In a templater template for
 
 ### Auth issues
 
-If you're using a recent version of the GitHub CLI that uses the system keychain to store credentials, these helper functions may not work. If so, you can prepend the `PATH` to the user functions:
+If you're using a recent version of the GitHub CLI that uses the system keychain to store credentials, these helper functions may not work. If so, you can configure the `PATH` in the user functions. This assumes you've installed the GH CLI with homebrew:
 
 - `PATH=$PATH:/opt/homebrew/bin /opt/homebrew/bin/gh md link -n "$input"`
 - `PATH=$PATH:/opt/homebrew/bin /opt/homebrew/bin/gh md title -n --sanitize "$input"`
+
+## Using `gh-md` with [Espanso](https://espanso.org)
+
+An espanso config for generating links and references from the clipboard:
+
+```yaml
+matches:
+  - trigger: "//md"
+    replace: "{{output}}"
+    vars:
+      - name: clipboard
+        type: clipboard
+      - name: output
+        type: shell
+        params:
+          cmd: "gh md link {{clipboard}}"
+  - trigger: "//ml"
+    replace: "{{output}}"
+    vars:
+      - name: clipboard
+        type: clipboard
+      - name: output
+        type: shell
+        params:
+          cmd: "gh md link --simple {{clipboard}}"
+  - trigger: "//ir"
+    replace: "{{output}}"
+    vars:
+      - name: clipboard
+        type: clipboard
+      - name: output
+        type: shell
+        params:
+          cmd: "gh md ref {{clipboard}}"
+```
