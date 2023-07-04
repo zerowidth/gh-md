@@ -66,3 +66,12 @@ The title can be sanitized for use as a path, stripping `:`, `/`, and a few othe
 ```
 <%- await tp.file.rename("Issue - " + tp.date.now("YYYY-MM") + " - " + (await tp.user.markdownTitle({input: (await tp.system.clipboard())}))) -%>
 ```
+
+### `gh md url`
+
+Generates the URL from the given issue reference or markdown link.
+
+```
+$ gh md url cli/cli#123
+https://github.com/cli/cli/pull/123
+```

@@ -115,15 +115,28 @@ Example:
 	},
 }
 
+var urlCmd = &cobra.Command{
+	Use:   "url <ref or markdown link>",
+	Short: "Convert an issue reference or markdown link into a bare GitHub URL",
+	Args:  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		out, err := url(args[0])
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		printOptionalNewline(cmd, out)
+	},
+}
+
 var client api.GQLClient
 
 func init() {
-	linkCmd.Flags().BoolP("no-newline", "n", false, "Do not print trailing newline")
-	titleCmd.Flags().BoolP("no-newline", "n", false, "Do not print trailing newline")
-	refCmd.Flags().BoolP("no-newline", "n", false, "Do not print trailing newline")
+	for _, cmd := range []*cobra.Command{linkCmd, refCmd, titleCmd, urlCmd} {
+		cmd.Flags().BoolP("no-newline", "n", false, "Do not print trailing newline")
+	}
 	linkCmd.Flags().Bool("simple", false, "Disable title lookup")
 	titleCmd.Flags().Bool("sanitize", false, "Sanitize output for use as a file path")
-	rootCmd.AddCommand(linkCmd, refCmd, titleCmd)
+	rootCmd.AddCommand(linkCmd, refCmd, titleCmd, urlCmd)
 }
 
 func main() {
@@ -197,6 +210,15 @@ func title(input string, sanitize bool) (string, error) {
 	}
 
 	return title, nil
+}
+
+func url(input string) (string, error) {
+	reference, matched := match(input)
+	if !matched {
+		return input, nil
+	}
+
+	return reference.URL(), nil
 }
 
 func printOptionalNewline(cmd *cobra.Command, output string) {
