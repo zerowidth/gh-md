@@ -37,12 +37,6 @@ $ gh md link cli/cli#123
 [cli/cli#123: Tweak flags language](https://github.com/cli/cli/pull/123)
 ```
 
-In Obsidian, setting this up as a user-defined function in the [Templater](https://github.com/SilentVoid13/Templater) plugin:
-
-- define `markdownLink` as `/path/to/gh md link $input`
-- copy a GitHub URL to your clipboard
-- use it in a template: `<% tp.user.markdownLink({input: (await tp.system.clipboard())}) %>`
-
 ### `gh md ref`
 
 Generates an issue/pr/discussion reference from an input URL or reference.
@@ -61,11 +55,7 @@ $ gh md title cli/cli#123
 Tweak flags language
 ```
 
-The title can be sanitized for use as a path, stripping `:`, `/`, and a few other characters. For example, in Obsidian templater, define `markdownTitle` as `/path/to/gh md title --sanitize $input`. After copying a GitHub URL to your clipboard, you can use this in a file template like:
-
-```
-<%- await tp.file.rename("Issue - " + tp.date.now("YYYY-MM") + " - " + (await tp.user.markdownTitle({input: (await tp.system.clipboard())}))) -%>
-```
+The title can be sanitized for use as a path, stripping `:`, `/`, and a few other characters.
 
 ### `gh md url`
 
@@ -75,3 +65,31 @@ Generates the URL from the given issue reference or markdown link.
 $ gh md url cli/cli#123
 https://github.com/cli/cli/pull/123
 ```
+
+## Using `gh-md` in [Obsidian](https://obsidian.md)
+
+`gh-md` was built in part to be used in user-defined functions in the [Templater](https://github.com/SilentVoid13/Templater) plugin.
+
+### Markdown links
+
+- define a `markdownLink` user function as `/path/to/gh md link -n "$input"`
+- copy a GitHub URL to your clipboard
+- use it in a template: `<% tp.user.markdownLink({input: (await tp.system.clipboard())}) %>`
+
+### Sanitized titles
+
+The sanitized issue title can be used for filenames. In a templater template for creating a document for an issue from the clipboard:
+
+- Define a `markdownTitle` user function as `/path/to/gh md title -n --sanitize "$input"`.
+- Use the title to rename a new file from that template:
+
+  ```
+  <%- await tp.file.rename("Issue - " + tp.date.now("YYYY-MM") + " - " + (await tp.user.markdownTitle({input: (await tp.system.clipboard())}))) -%>
+  ```
+
+### Auth issues
+
+If you're using a recent version of the GitHub CLI that uses the system keychain to store credentials, these helper functions may not work. If so, you can prepend the `PATH` to the user functions:
+
+- `PATH=$PATH:/opt/homebrew/bin /opt/homebrew/bin/gh md link -n "$input"`
+- `PATH=$PATH:/opt/homebrew/bin /opt/homebrew/bin/gh md title -n --sanitize "$input"`
