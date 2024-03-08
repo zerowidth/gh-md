@@ -171,6 +171,11 @@ func link(input string, simple bool) (string, error) {
 		if err != nil {
 			return input, err
 		}
+
+		if strings.Count(title, "::") > 1 {
+			title = strings.ReplaceAll(title, "::", "-")
+		}
+
 		return fmt.Sprintf("[%s: %s](%s)", ref, title, reference.URL()), nil
 	}
 }
@@ -206,7 +211,7 @@ func title(input string, sanitize bool) (string, error) {
 	title = strings.ReplaceAll(title, "[", "(")
 	title = strings.ReplaceAll(title, "]", ")")
 	if strings.Count(title, "::") > 1 {
-		title = strings.ReplaceAll(title, "::", "|")
+		title = strings.ReplaceAll(title, "::", "-")
 	}
 
 	return title, nil
